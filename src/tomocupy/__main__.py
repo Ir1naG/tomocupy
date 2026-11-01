@@ -50,6 +50,7 @@ from tomocupy import config
 from tomocupy import GPURec
 from tomocupy import FindCenter
 from tomocupy import GPURecSteps
+from tomocupy import GPURecFDK
 from tomocupy.global_vars import args, params
 
 from tomocupy.dataio import reader
@@ -71,6 +72,19 @@ def init(args):
 
 def run_status(args):
     config.log_values(args)
+
+
+def run_fdk(args):
+    """Cone-beam FDK reconstruction (lab/micro-CT, flat-panel detector)."""
+
+    if not Path(args.file_name).is_file():
+        log.error("File Name does not exist: %s" % args.file_name)
+        exit()
+
+    t = time.time()
+    clpthandle = GPURecFDK()
+    clpthandle.recon_all()
+    log.warning(f'Reconstruction time {time.time()-t:.1e}s')
 
 
 def _find_center(cl_reader):
@@ -255,6 +269,7 @@ def main():
     parser.add_argument('--config', **config.SECTIONS['general']['config'])
     tomo_params = config.RECON_PARAMS
     tomo_steps_params = config.RECON_STEPS_PARAMS
+    fdk_params = config.FDK_PARAMS
     #
 
     cmd_parsers = [
@@ -264,6 +279,8 @@ def main():
          "Run tomographic processing by splitting data into chunks in z "),
         ('recon_steps',   run_recsteps,     tomo_steps_params,
          "Run tomographic reconstruction by splitting by chunks in z and angles (step-wise)"),
+        ('fdk',         run_fdk,         fdk_params,
+         "Cone-beam FDK reconstruction for lab/micro-CT data (flat-panel detector, circular trajectory)"),
         ('status',      run_status,      tomo_steps_params,
          "Show the tomographic reconstruction status"),
     ]
@@ -303,6 +320,8 @@ def main():
 
     try:
         if args._func == init:
+            args._func(args)
+        elif args._func == run_fdk:
             args._func(args)
         else:
             save_test_results_ok = args.save_test_results

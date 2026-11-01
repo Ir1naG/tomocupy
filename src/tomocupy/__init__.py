@@ -52,6 +52,7 @@ from tomocupy.config import *
 from tomocupy.logging import *
 from tomocupy.rec import *
 from tomocupy.rec_steps import *
+from tomocupy.fdk_rec import *
 from tomocupy.find_center import *
 from tomocupy.utils import *
 from tomocupy.reconstruction import *

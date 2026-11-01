@@ -500,6 +500,140 @@ SECTIONS['output'] ={
 }
 
 
+SECTIONS['fdk'] = {
+    'source-origin-dist': {
+        'default': -1.0,
+        'type': float,
+        'help': "Distance from the x-ray source to the rotation axis (same length unit as source-detector-dist/detector-pixel-size, e.g. mm). Required."},
+    'source-detector-dist': {
+        'default': -1.0,
+        'type': float,
+        'help': "Distance from the x-ray source to the detector (same length unit as source-origin-dist/detector-pixel-size). Required."},
+    'detector-pixel-size': {
+        'default': -1.0,
+        'type': float,
+        'help': "Detector pixel size, before binning (same length unit as source-origin-dist/source-detector-dist). Required."},
+    'volume-pixel-size': {
+        'default': 0.0,
+        'type': float,
+        'help': "Reconstructed voxel size (same length unit). 0 = auto: detector-pixel-size * source-origin-dist/source-detector-dist."},
+    'center-u': {
+        'default': 0.0,
+        'type': float,
+        'help': "Horizontal offset of the detector's principal point (the source projected onto the detector) from the geometric detector center, in detector pixels."},
+    'center-v': {
+        'default': 0.0,
+        'type': float,
+        'help': "Vertical offset of the detector's principal point from the geometric detector center, in detector pixels."},
+    'full-rotation-deg': {
+        'default': 360.0,
+        'type': float,
+        'help': "Total angular range of the scan. Used only when /exchange/theta is absent from the input file, to build a uniformly spaced angle list."},
+    'fdk-filter': {
+        'default': 'parzen',
+        'type': str,
+        'help': "Filter for FDK reconstruction",
+        'choices': ['none', 'ramp', 'shepp', 'hann', 'hamming', 'parzen', 'cosine', 'cosine2']},
+    'volume-size': {
+        'default': 0,
+        'type': int,
+        'help': "Reconstructed volume width/height in voxels (x,y). 0 = auto: same as the (cropped/binned) detector width."},
+    'volume-height': {
+        'default': 0,
+        'type': int,
+        'help': "Reconstructed volume depth in voxels (z). 0 = auto: same as the (cropped/binned) detector height."},
+    'start-row': {
+        'default': 0,
+        'type': int,
+        'help': "Start detector row"},
+    'end-row': {
+        'default': -1,
+        'type': int,
+        'help': "End detector row"},
+    'start-column': {
+        'default': 0,
+        'type': int,
+        'help': "Start detector column"},
+    'end-column': {
+        'default': -1,
+        'type': int,
+        'help': "End detector column"},
+    'start-proj': {
+        'default': 0,
+        'type': int,
+        'help': "Start projection"},
+    'end-proj': {
+        'default': -1,
+        'type': int,
+        'help': "End projection"},
+    'nz-per-chunk': {
+        'default': 16,
+        'type': utils.positive_int,
+        'help': "Number of reconstructed z-slices per GPU chunk. Use smaller numbers on GPUs with less memory."},
+    'nproj-per-chunk': {
+        'default': 60,
+        'type': utils.positive_int,
+        'help': "Number of projections read/filtered/uploaded per chunk. Use smaller numbers on GPUs with less memory."},
+    'minus-log': {
+        'default': 'True',
+        'help': "Take -log or not"},
+    'bright-ratio': {
+        'type': float,
+        'default': 1,
+        'help': 'exposure time for flat fields divided by the exposure time of projections'},
+    'dezinger': {
+        'type': int,
+        'default': 0,
+        'help': "Width of region for removing outliers"},
+    'dezinger-threshold': {
+        'type': int,
+        'default': 5000,
+        'help': "Threshold of grayscale above local median to be considered a zinger pixel"},
+    'max-write-threads': {
+        'type': int,
+        'default': 8,
+        'help': "Max number of threads for writing by chunks"},
+    'max-read-threads': {
+        'type': int,
+        'default': 4,
+        'help': "Max number of threads for reading by chunks"},
+    'short-scan-weighting': {
+        'default': 'auto',
+        'type': str,
+        'help': "Redundancy weighting for scans under 360 degrees (Parker 1982). "
+                "'auto' enables it whenever the scan covers less than a full "
+                "rotation, 'none' always disables it, 'parker' always enables it.",
+        'choices': ['auto', 'none', 'parker']},
+    'stripe-rows-per-chunk': {
+        'default': 16,
+        'type': utils.positive_int,
+        'help': "Number of detector rows processed per chunk during ring removal "
+                "(which needs the full angular range at once, unlike the rest of "
+                "the filtering pass). Use smaller numbers on GPUs with less memory."},
+}
+
+SECTIONS['fdk-output'] = {
+    'save-format': {
+        'default': 'tiff',
+        'type': str,
+        'help': "Output format",
+        'choices': ['tiff', 'h5nolinks', 'h5', 'zarr']},
+    'zarr-compression': {
+        'default': 'blosclz',
+        'type': str,
+        'help': "ZARR compression format",
+        'choices': ['blosclz', 'lz4', 'zstd']},
+    'zarr-chunk': {
+        'default': '8,64,64',
+        'type': str,
+        'help': "ZARR chunk size"},
+    'clear-folder': {
+        'default': 'False',
+        'type': str,
+        'help': "Clear output folder before reconstruction",
+        'choices': ['True', 'False']},
+}
+
 SECTIONS['beam-hardening'] = {
     'beam-hardening-method': {
         'default': 'none',
@@ -764,6 +898,8 @@ RECON_PARAMS = ('file-reading', 'remove-stripe',
                 'reconstruction', 'fw', 'ti', 'vo-all', 'lamino', 'reconstruction-types', 'beam-hardening', 'inference', 'output', 'bin-inference')
 RECON_STEPS_PARAMS = ('file-reading', 'remove-stripe', 'reconstruction',
                       'retrieve-phase', 'fw', 'ti', 'vo-all', 'lamino', 'reconstruction-steps-types', 'rotate-proj', 'beam-hardening', 'inference', 'output', 'bin-inference')
+FDK_PARAMS = ('file-reading', 'remove-stripe', 'fw', 'ti',
+              'vo-all', 'fdk', 'fdk-output')
 
 NICE_NAMES = ('General', 'File reading', 'Remove stripe',
               'Remove stripe FW', 'Remove stripe Titarenko', 'Remove stripe Vo', 'Retrieve phase', 'Reconstruction','Inference','Bin inference')
