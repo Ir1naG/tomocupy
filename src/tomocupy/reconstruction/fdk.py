@@ -2,11 +2,6 @@
 # -*- coding: utf-8 -*-
 
 # *************************************************************************** #
-#                  Copyright © 2022, UChicago Argonne, LLC                    #
-#                           All Rights Reserved                               #
-#                         Software Name: Tomocupy                             #
-#                     By: Argonne National Laboratory                         #
-#                                                                             #
 #                           OPEN SOURCE LICENSE                               #
 #                                                                             #
 # Redistribution and use in source and binary forms, with or without          #
@@ -42,7 +37,6 @@ import numpy as np
 import cupy as cp
 
 __author__ = "Tomocupy contributors"
-__copyright__ = "Copyright (c) 2022, UChicago Argonne, LLC."
 __docformat__ = 'restructuredtext en'
 __all__ = ['FDKRec']
 
